@@ -1,7 +1,13 @@
 import express from "express";
+import {MongoClient} from "mongodb";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+console.log(process.env);
 const app = express();
 
-
+app.use(express.json())
 const PORT = 9000;
 const movies = [
   {
@@ -73,26 +79,71 @@ const movies = [
   },
 ];
 
+
+
+
+// const MONGO_URL = "mongodb://localhost"
+const MONGO_URL = "mongodb+srv://raghul1:raghul123@cluster0.qmnjz.mongodb.net"
+
+// mongodb+srv://raghul:<password>@cluster0.qmnjz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+// mongodb+srv://<username>:<password>@cluster0.qmnjz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+
+async function createConnection(){
+  const client = new MongoClient(MONGO_URL);
+  await client.connect();
+  console.log("Mongodb Connected!!!");
+  
+  return client;
+
+}
+
 app.get("/", (request, response) => {
   response.send("hello, 🌎!!! 😁😁");
 });
 
-app.get("/movies", (request, response) => {
+app.get("/movies", async (request, response) => {
   console.log(request.query);
-  const { language, rating } = request.query;
-
-  let filteredMovies = movies;
-  console.log(filteredMovies)
-
-  if (language) {
-    filteredMovies = filteredMovies.filter((mv) => mv.language === language);
+  const filter = request.query;
+  console.log(filter);
+  if(filter.rating) {
+    filter.rating = parseInt(filter.rating);
   }
+  console.log(filter);
+  const client = await createConnection();
 
-  if (rating) {
-    filteredMovies = filteredMovies.filter((mv) => mv.rating === +rating);
-  }
+  const movies = await client
+  .db("b27rwd")
+  .collection("movies")
+  .find(filter)
+  .toArray();
 
-  response.send(filteredMovies);
+    response.send(movies);
 });
+
+app.get("/movies/:id", async (request, response) =>{
+  const { id } = request.params;
+  const client = await createConnection();
+
+  const movie = await client
+  .db("b27rwd")
+ .collection("movies")
+ .findOne({id: id});
+
+  movie ? response.send(movie) : response.send({message : "no matching movies"});
+});
+
+app.post("/movies", async (request, response) =>{
+  const data = request.body;
+  const client = await createConnection();
+  console.log("data", data);
+  const result = await client
+  .db("b27rwd")
+ .collection("movies")
+ .insertMany( data ); 
+
+   response.send (result);
+});
+
+
 
 app.listen(PORT, () => console.log("the server is started in ", PORT));
