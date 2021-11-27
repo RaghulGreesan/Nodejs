@@ -83,7 +83,7 @@ const movies = [
 
 
 // const MONGO_URL = "mongodb://localhost"
-const MONGO_URL =  process.env.MONGO_URL;
+const MONGO_URL =  process.env.MONGO_URL; 
 
 // mongodb+srv://raghul:<password>@cluster0.qmnjz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
 // mongodb+srv://<username>:<password>@cluster0.qmnjz.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
