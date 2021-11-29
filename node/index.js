@@ -104,7 +104,7 @@ app.get("/", (request, response) => {
   response.send("hello, 🌎!!! 😁😁");
 });
 
-app.use('/movies', movieRouter);
+app.use("/movies", movieRouter);
 
 app.listen(PORT, () => console.log("the server is started in ", PORT));
 
