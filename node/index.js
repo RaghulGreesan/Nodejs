@@ -1,6 +1,14 @@
 import express from "express";
 import {MongoClient} from "mongodb";
 import dotenv from "dotenv";
+import {
+  updateMovieByName,
+  getMovieByName,
+  getMovies,
+  getMovieById,
+  createMovie,
+  deleteMovieById,
+} from "./helper.js";
 
 dotenv.config();
 
@@ -97,49 +105,47 @@ async function createConnection(){
 
 }
 
+ const client = await createConnection();
+
 app.get("/", (request, response) => {
   response.send("hello, 🌎!!! 😁😁");
 });
 
 app.get("/movies", async (request, response) => {
-  console.log(request.query);
   const filter = request.query;
-  console.log(filter);
   if(filter.rating) {
     filter.rating = parseInt(filter.rating);
   }
-  console.log(filter);
-  const client = await createConnection();
-
-  const movies = await client
-  .db("b27rwd")
-  .collection("movies")
-  .find(filter)
-  .toArray();
+  const movies = await getMovies(filter);
 
     response.send(movies);
 });
 
+app.put("/movies", async (request, response) => {
+  const { name } = request.query;
+
+   await updateMovieByName(name, request);
+  const movie = await getMovieByName(name);
+  response.send(movie);
+});
+
 app.get("/movies/:id", async (request, response) =>{
   const { id } = request.params;
-  const client = await createConnection();
-
-  const movie = await client
-  .db("b27rwd")
- .collection("movies")
- .findOne({id: id});
+  const movie = await getMovieById(id);
 
   movie ? response.send(movie) : response.send({message : "no matching movies"});
 });
 
+app.delete("/movies/:id", async (request, response) =>{
+  const { id } = request.params;
+  const movie = await deleteMovieById(id);
+
+   response.send(movie  || {message : "No matching movies"});
+});
+
 app.post("/movies", async (request, response) =>{
   const data = request.body;
-  const client = await createConnection();
-  console.log("data", data);
-  const result = await client
-  .db("b27rwd")
- .collection("movies")
- .insertMany( data ); 
+  const result = await createMovie(data); 
 
    response.send (result);
 });
@@ -147,3 +153,5 @@ app.post("/movies", async (request, response) =>{
 
 
 app.listen(PORT, () => console.log("the server is started in ", PORT));
+
+export { client };
