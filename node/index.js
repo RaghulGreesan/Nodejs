@@ -9,7 +9,7 @@ console.log(process.env);
 const app = express();
 
 app.use(express.json())
-const PORT = 9000;
+const PORT = process.env.PORT || 9000;
 const movies = [
   {
     id: "100",
